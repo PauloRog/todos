@@ -16,7 +16,7 @@ function checkExistsUserAccount(request, response, next) {
   );
 
   if (!user) {
-    return response.status(400).json({ error: 'User not found' });
+    return response.status(404).json({ error: 'User not found' });
   };
 
   request.user = user;
@@ -92,10 +92,6 @@ app.get('/todos', (request, response) => {
   const { user } = request;
   const { todos } = user;
 
-  if (todos.length === 0) {
-    return response.json({ message: 'There are no registered todos!' })
-  }
-
   return response.json(todos);
 });
 
@@ -117,7 +113,7 @@ app.post('/todos', (request, response) => {
 
   user.todos.push(todoOperation);
 
-  return response.json(todoOperation)
+  return response.status(201).json(todoOperation)
 })
 
 app.put('/todos/:id', (request, response) => {
@@ -157,10 +153,16 @@ app.patch('/todos/:id/done', (request, response) => {
 
 app.delete('/todos/:id', (request, response) => {
   const { user } = request;
+  const { id } = request.params;
+  const todoIndex = user.todos.findIndex(todo => todo.id === id);
 
-  users.splice(user, 1);
+  if (todoIndex === -1) {
+    return response.status(404).json({ error: 'Todo not found!'})
+  }
 
-  return response.status(200).json({ message: 'User delete success'});
+  user.todos.splice(todoIndex, 1);
+
+  return response.status(204).json();
 })
 
 app.listen(3333, () => {
