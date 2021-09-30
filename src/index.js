@@ -78,6 +78,27 @@ app.get('/todos', (request, response) => {
   return response.json(todos);
 });
 
+app.post('/todos', (request, response) => {
+  const { title, deadline } = request.body;
+
+  if (!title || !deadline) {
+    return response.status(400).json({ error: 'title and deadline are required!' })
+  }
+
+  const { user } = request;
+  const todoOperation = {
+    id: uuidv4(),
+    title,
+    done: false,
+    deadline: new Date(deadline),
+    created_at: new Date()
+  }
+  
+  user.todos.push(todoOperation);
+
+  return response.json(todoOperation)
+})
+
 app.listen(3333, () => {
   console.log('Server running! Go to: http://localhost:3333')
 })
