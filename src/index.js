@@ -6,12 +6,23 @@ const app = expres();
 
 const users = [];
 
-function verifyExistsUserAccount(request, response, next) {
-
-}
-
 app.use(cors());
 app.use(expres.json());
+
+function verifyExistsUserAccount(request, response, next) {
+  const { username } = request.headers;
+  const user = users.find(
+    (user) => user.username === username
+  );
+
+  if (!user) {
+    return response.status(400).json({ error: 'User not found' });
+  };
+
+  request.user = user;
+
+  return next();
+}
 
 app.get('/', (request, response) => {
   return response.json({
@@ -31,7 +42,7 @@ app.get('/', (request, response) => {
 app.post('/users', (request, response) => {
   const { name, username } = request.body;
   const usernameAlreadyExists = users.some(
-    (_user) => _user.username === username
+    (user) => user.username === username
   )
 
   if (usernameAlreadyExists) {
@@ -41,7 +52,7 @@ app.post('/users', (request, response) => {
   if (!name || !username) {
     return response.status(400).json({ error: 'name and username are required!' })
   }
-  
+
   const user = {
     id: uuidv4(),
     name,
@@ -52,6 +63,19 @@ app.post('/users', (request, response) => {
   users.push(user);
 
   return response.status(201).send(user);
+});
+
+app.use(verifyExistsUserAccount);
+
+app.get('/todos', (request, response) => {
+  const { user } = request;
+  const { todos } = user;
+
+  if (todos.length === 0) {
+    return response.json({ message: 'There are no registered todos!' })
+  }
+
+  return response.json(todos);
 });
 
 app.listen(3333, () => {
