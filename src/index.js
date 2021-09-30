@@ -9,7 +9,7 @@ const users = [];
 app.use(cors());
 app.use(expres.json());
 
-function verifyExistsUserAccount(request, response, next) {
+function checkExistsUserAccount(request, response, next) {
   const { username } = request.headers;
   const user = users.find(
     (user) => user.username === username
@@ -86,7 +86,7 @@ app.post('/users', (request, response) => {
   return response.status(201).send(user);
 });
 
-app.use(verifyExistsUserAccount);
+app.use(checkExistsUserAccount);
 
 app.get('/todos', (request, response) => {
   const { user } = request;
@@ -151,7 +151,7 @@ app.patch('/todos/:id/done', (request, response) => {
   }
   
   todo.done = true;
-  
+
   return response.json(todo);
 });
 
