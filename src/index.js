@@ -165,6 +165,4 @@ app.delete('/todos/:id', (request, response) => {
   return response.status(204).json();
 })
 
-app.listen(3333, () => {
-  console.log('Server running! Go to: http://localhost:3333')
-})
+module.exports = app;
