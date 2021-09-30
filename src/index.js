@@ -28,12 +28,33 @@ app.get('/', (request, response) => {
   return response.json({
     api: 'Todos',
     createdBy: 'Paulo Rogério',
-    gretting: 'This api was created as a challenge for the boot camp ignite, in order to control everyone (Activities)',
+    gretting: 'This api was created as a challenge for the boot camp ignite, in order to control everyone (Todos)',
     baseUrl: 'http://localhost:3333',
     routes: [
       {
         type: 'POST',
         route: 'baseUrl/users',
+        description: 'Create User',
+      },
+      {
+        type: 'GET',
+        route: 'baseUrl/todos',
+        description: 'Listing Todos',
+      },
+      {
+        type: 'POST',
+        route: 'baseUrl/todos',
+        description: 'Create Todos',
+      },
+      {
+        type: 'PUT',
+        route: 'baseUrl/todos/:id',
+        description: 'Update Todo',
+      },
+      {
+        type: 'PATCH',
+        route: 'baseUrl/todos/:id/done',
+        description: 'Update done',
       },
     ]
   })
@@ -79,13 +100,13 @@ app.get('/todos', (request, response) => {
 });
 
 app.post('/todos', (request, response) => {
+  const { user } = request;
   const { title, deadline } = request.body;
 
   if (!title || !deadline) {
     return response.status(400).json({ error: 'title and deadline are required!' })
   }
 
-  const { user } = request;
   const todoOperation = {
     id: uuidv4(),
     title,
@@ -93,10 +114,53 @@ app.post('/todos', (request, response) => {
     deadline: new Date(deadline),
     created_at: new Date()
   }
-  
+
   user.todos.push(todoOperation);
 
   return response.json(todoOperation)
+})
+
+app.put('/todos/:id', (request, response) => {
+  const { user } = request;
+  const { id } = request.params;
+  const { title, deadline } = request.body;
+
+  if (!title && !deadline) {
+    return response.status(400).json({ error: 'title or deadline are required!'})
+  }
+
+  const todo = user.todos.find(todo => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: 'Todo not found!'})
+  }
+
+  todo.title = title;
+  todo.deadline = new Date(deadline);
+  
+  return response.json(todo);
+});
+
+app.patch('/todos/:id/done', (request, response) => {
+  const { user } = request;
+  const { id } = request.params;
+  const todo = user.todos.find(todo => todo.id === id);
+
+  if (!todo) {
+    return response.status(404).json({ error: 'Todo not found!'})
+  }
+  
+  todo.done = true;
+  
+  return response.json(todo);
+});
+
+app.delete('/todos/:id', (request, response) => {
+  const { user } = request;
+
+  users.splice(user, 1);
+
+  return response.status(200).json({ message: 'User delete success'});
 })
 
 app.listen(3333, () => {
